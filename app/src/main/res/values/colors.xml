@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Telegram-inspired Dark Theme Colors -->
+    
+    <!-- Background colors -->
+    <color name="background_dark">#17212B</color>
+    <color name="surface_dark">#1E2C3A</color>
+    <color name="surface_variant_dark">#242F3D</color>
+    <color name="card_dark">#1E2C3A</color>
+    
+    <!-- Primary accent (Telegram blue) -->
+    <color name="primary_blue">#5EBBF4</color>
+    <color name="primary_blue_dark">#3D9AD1</color>
+    <color name="primary_container">#2B5278</color>
+    
+    <!-- Text colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8B9AAB</color>
+    <color name="text_tertiary">#6B7B8C</color>
+    
+    <!-- Status colors -->
+    <color name="status_success">#5CC85C</color>
+    <color name="status_warning">#FFA726</color>
+    <color name="status_error">#F44336</color>
+    <color name="status_info">#5EBBF4</color>
+    
+    <!-- Track badges -->
+    <color name="badge_release">#5CC85C</color>
+    <color name="badge_prerelease">#FFA726</color>
+    <color name="badge_installed">#5EBBF4</color>
+    
+    <!-- Divider -->
+    <color name="divider">#2B3D4F</color>
+    
+    <!-- Legacy colors (kept for compatibility) -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#5EBBF4</color>
+    <color name="purple_700">#3D9AD1</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

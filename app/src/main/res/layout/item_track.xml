@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/surface_variant_dark"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/divider">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Track Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Track Badge -->
+            <TextView
+                android:id="@+id/tvTrackBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/badge_release"
+                tools:text="Release" />
+
+            <!-- Status Badge (Installed/Update/Old) -->
+            <TextView
+                android:id="@+id/tvStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                tools:text="INSTALLED"
+                tools:visibility="visible"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"/>
+
+            <!-- Download Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDownload"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Download"
+                android:textSize="12sp"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/primary_blue"
+                style="@style/Widget.Material3.Button"/>
+
+        </LinearLayout>
+
+        <!-- Version Info Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                tools:text="v1.0.1" />
+
+            <TextView
+                android:id="@+id/tvVersionCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="12sp"
+                android:textColor="@color/text_tertiary"
+                tools:text="(code: 2)" />
+
+        </LinearLayout>
+
+        <!-- Package Name (if known) -->
+        <TextView
+            android:id="@+id/tvTrackPackageName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="11sp"
+            android:textColor="@color/text_tertiary"
+            android:visibility="gone"
+            tools:text="pkg: com.tagbin.workly"
+            tools:visibility="visible"/>
+
+        <!-- Release Title -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:visibility="gone"
+            tools:text="Bug fixes and performance improvements"
+            tools:visibility="visible"/>
+
+        <!-- Changelog/Notes -->
+        <TextView
+            android:id="@+id/tvChangelog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2dp"
+            android:visibility="gone"
+            tools:text="- Fixed login issue\n- Improved performance\n- New dark mode\n- Added new features\n- Bug fixes"
+            tools:visibility="visible"/>
+
+        <!-- Read More/Less Button -->
+        <TextView
+            android:id="@+id/tvReadMore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Read more"
+            android:textSize="13sp"
+            android:textColor="@color/primary_blue"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:padding="4dp"
+            tools:visibility="visible"/>
+
+        <!-- Published Date/Time -->
+        <TextView
+            android:id="@+id/tvPublishedAt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="11sp"
+            android:textColor="@color/text_tertiary"
+            tools:text="📅 Jan 15, 2024 at 3:45 PM" />
+
+        <!-- No APK Warning -->
+        <LinearLayout
+            android:id="@+id/layoutNoApk"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/warning_background"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚠️"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tvNoApk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="No APK available in this release"
+                android:textSize="12sp"
+                android:textColor="@color/status_warning"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
