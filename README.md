@@ -189,7 +189,11 @@ for private repos.
 
 <h3>🎥 Video Demo</h3>
 <p>
-<strong>[PLACEHOLDER – Demo video coming soon]</strong>
+
+
+https://github.com/user-attachments/assets/85ff01bd-1dc5-4fd2-9368-1237ac38c9df
+
+
 </p>
 
 <!-- Example:
@@ -198,10 +202,12 @@ for private repos.
 
 <h3>📱 Screenshots</h3>
 
-<p><strong>[PLACEHOLDER – Screenshot 1]</strong></p>
+![Screenshot_2026-02-02-22-56-26-03_52c825073118afd8870e99571b2331fa jpg](https://github.com/user-attachments/assets/c241daa3-5c38-4971-a60a-811b5d8d0e42)
 <!-- <img src="screenshot1.png" width="300" /> -->
 
-<p><strong>[PLACEHOLDER – Screenshot 2]</strong></p>
+
+
+![Screenshot_2026-02-02-22-56-30-43_52c825073118afd8870e99571b2331fa jpg](https://github.com/user-attachments/assets/c44c61f9-4411-4a23-8826-893329b56900)
 <!-- <img src="screenshot2.png" width="300" /> -->
 
 <hr />
