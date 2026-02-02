@@ -1,9 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>GitRelease README</title>
-</head>
 <body>
 
 <h1>GitRelease 🚀</h1>
