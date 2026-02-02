@@ -200,19 +200,24 @@ for private repos.
 </p>
 
 <h3>📱 Screenshots</h3>
-<p style="display: flex; gap: 16px; flex-wrap: wrap;">
-  <img
-    src="https://github.com/user-attachments/assets/c241daa3-5c38-4971-a60a-811b5d8d0e42"
-    style="width: 280px; border-radius: 12px;"
-    alt="GitRelease Screenshot 1"
-  />
-
-  <img
-    src="https://github.com/user-attachments/assets/c44c61f9-4411-4a23-8826-893329b56900"
-    style="width: 280px; border-radius: 12px;"
-    alt="GitRelease Screenshot 2"
-  />
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <img
+        src="https://github.com/user-attachments/assets/c241daa3-5c38-4971-a60a-811b5d8d0e42"
+        width="280"
+        alt="GitRelease Screenshot 1"
+      />
+    </td>
+    <td align="center">
+      <img
+        src="https://github.com/user-attachments/assets/c44c61f9-4411-4a23-8826-893329b56900"
+        width="280"
+        alt="GitRelease Screenshot 2"
+      />
+    </td>
+  </tr>
+</table>
 
 <hr />
 
