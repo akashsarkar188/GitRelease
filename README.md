@@ -147,6 +147,44 @@ If something looks suspicious, it isn’t — you can verify it in the code.
 
 <hr />
 
+<h2>Using Private Repositories (GitHub Personal Access Token)</h2>
+
+<p>
+GitRelease can access <strong>private repositories</strong> if you provide a
+<strong>GitHub Personal Access Token</strong>. This is optional and only required
+for private repos.
+</p>
+
+<h3>How to Generate a Personal Access Token</h3>
+<ol>
+  <li>Open GitHub and go to <strong>Settings</strong></li>
+  <li>Navigate to <strong>Developer settings</strong></li>
+  <li>Click <strong>Personal access tokens</strong></li>
+  <li>Select <strong>Tokens (classic)</strong></li>
+  <li>Click <strong>Generate new token</strong> → <strong>Generate new token (classic)</strong></li>
+  <li>Add a note (e.g. <code>GitRelease QA Access</code>)</li>
+  <li>Set an expiration date (recommended)</li>
+  <li>
+    Under <strong>Select scopes</strong>, enable only:
+    <ul>
+      <li><strong>repo</strong></li>
+    </ul>
+  </li>
+  <li>Generate the token and copy it</li>
+</ol>
+
+<p>
+<strong>Important:</strong>
+</p>
+<ul>
+  <li>Use <strong>Classic tokens only</strong> (Fine-grained tokens are not supported)</li>
+  <li>Grant <strong>repo</strong> access only — nothing else is required</li>
+  <li>The token is used <strong>only</strong> to read repository and release data</li>
+  <li>The token is <strong>never logged, tracked, or shared</strong></li>
+</ul>
+
+<hr />
+
 <h2>Demo &amp; Screenshots</h2>
 
 <h3>🎥 Video Demo</h3>
