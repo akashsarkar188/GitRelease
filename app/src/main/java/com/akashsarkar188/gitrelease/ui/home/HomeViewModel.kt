@@ -12,8 +12,10 @@ import com.akashsarkar188.gitrelease.data.manager.UpdateManager
 import com.akashsarkar188.gitrelease.data.remote.model.ReleaseAsset
 import com.akashsarkar188.gitrelease.data.repository.AppRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 
 private const val TAG = "HomeViewModel"
 private const val DEFAULT_REPO_OWNER = "akashsarkar188"
@@ -105,7 +107,9 @@ class HomeViewModel(
                         ownerAvatarUrl = DEFAULT_AVATAR_URL
                     )
                     repository.addTrackedApp(defaultApp)
-                    apps = apps + defaultApp
+                    // Don't just append; let the Flow from repository update the 'apps' list naturally
+                    // or if we need it now, we re-fetch from repo to be safe
+                    apps = repository.allTrackedApps.first()
                 }
                 
                 Log.d(TAG, "Refreshing ${apps.size} apps")
@@ -137,11 +141,31 @@ class HomeViewModel(
                     val tracks = mutableListOf<TrackInfo>()
                     
                     try {
-                        val releases = repository.getAllReleaseTracks(
-                            app.repoOwner,
-                            app.repoName,
-                            app.accessToken
-                        )
+                        val availableTokens = repository.allGithubTokens.first()
+                        var releases: List<com.akashsarkar188.gitrelease.data.remote.model.ReleaseResponse>? = null
+                        
+                        // Try with available tokens first
+                        for (tokenEntity in availableTokens) {
+                            try {
+                                releases = repository.getAllReleaseTracks(
+                                    app.repoOwner,
+                                    app.repoName,
+                                    tokenEntity.accessToken
+                                )
+                                if (releases.isNotEmpty()) break
+                            } catch (e: Exception) {
+                                // Skip failing tokens
+                            }
+                        }
+
+                        // If still empty (or no tokens worked), try unauthenticated
+                        if (releases.isNullOrEmpty()) {
+                            releases = repository.getAllReleaseTracks(
+                                app.repoOwner,
+                                app.repoName,
+                                null
+                            )
+                        }
                         
                         Log.d(TAG, "  Found ${releases.size} tracks")
                         
@@ -222,18 +246,32 @@ class HomeViewModel(
                         
                     } catch (e: Exception) {
                         Log.e(TAG, "Error fetching tracks for ${app.appName}: ${e.message}", e)
+                        var errorMsg = if (e is java.net.UnknownHostException) {
+                            "No internet connection."
+                        } else {
+                            e.message
+                        }
+                        
+                        if (errorMsg?.contains("rate limit", ignoreCase = true) == true || errorMsg?.contains("403") == true) {
+                            errorMsg = "GitHub Rate Limit Exceeded. Add a token in Settings ↑"
+                        }
+                        
                         states.add(AppUiState(
                             app = app,
                             installedPackages = installedPackages,
                             tracks = emptyList(),
-                            errorMessage = e.message
+                            errorMessage = errorMsg
                         ))
                     }
                 }
                 
-                _appStates.postValue(states)
+                // Final duplication check: group by repo path and take last (most recent)
+                val distinctStates = states.groupBy { "${it.app.repoOwner}/${it.app.repoName}".lowercase() }
+                    .map { it.value.last() }
+
+                _appStates.postValue(distinctStates)
                 _isLoading.postValue(false)
-                _statusMessage.postValue("Checked ${apps.size} app(s)")
+                _statusMessage.postValue("Checked ${distinctStates.size} app(s)")
             }
             Log.d(TAG, "refreshApps() completed")
         }
@@ -367,10 +405,12 @@ class HomeViewModel(
     }
     
     fun clearDownloads() {
-        Log.d(TAG, "Clearing downloaded APKs")
+        Log.d(TAG, "Clearing downloaded APKs from all sources")
         viewModelScope.launch {
-            val count = updateManager.clearDownloadedApks()
-            _statusMessage.value = "Deleted $count APK file(s)"
+            val count1 = downloadService.clearDownloadedApks()
+            val count2 = updateManager.clearDownloadedApks()
+            val total = count1 + count2
+            _statusMessage.value = "Deleted $total APK file(s)"
         }
     }
 }

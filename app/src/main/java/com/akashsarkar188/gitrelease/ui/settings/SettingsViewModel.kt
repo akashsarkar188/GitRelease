@@ -5,10 +5,14 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.akashsarkar188.gitrelease.auth.TokenManager
+import com.akashsarkar188.gitrelease.data.local.entity.GithubToken
 import com.akashsarkar188.gitrelease.data.local.entity.TrackedApp
 import com.akashsarkar188.gitrelease.data.repository.AppRepository
+import com.akashsarkar188.gitrelease.data.remote.model.RepoDetails
+import com.akashsarkar188.gitrelease.data.remote.model.UserProfile
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 sealed class SettingsEvent {
@@ -17,8 +21,7 @@ sealed class SettingsEvent {
 }
 
 class SettingsViewModel(
-    private val repository: AppRepository,
-    private val context: Context
+    private val repository: AppRepository
 ) : ViewModel() {
 
     private val _status = MutableLiveData<String>()
@@ -26,6 +29,8 @@ class SettingsViewModel(
     
     private val _event = MutableLiveData<SettingsEvent?>()
     val event: LiveData<SettingsEvent?> = _event
+
+    val tokens = repository.allGithubTokens.asLiveData()
 
     fun addRepository(url: String) {
         val (owner, repo) = parseRepoUrl(url) ?: run {
@@ -36,38 +41,89 @@ class SettingsViewModel(
         viewModelScope.launch {
             _status.value = "Checking repository..."
             
-            // Get saved token (if any)
-            val token = TokenManager.getToken(context)
+            val availableTokens = repository.allGithubTokens.first()
             
             try {
-                // Try with token first (works for both public & private)
-                val response = repository.getRepoDetails(owner, repo, token)
-                
-                if (response.isSuccessful) {
-                    val details = response.body()!!
-                    val app = TrackedApp(
-                        repoOwner = owner,
-                        repoName = repo,
-                        packageName = "",  // Auto-detected after first download
-                        appName = details.name,
-                        ownerAvatarUrl = details.owner.avatarUrl,
-                        accessToken = token // Store token with the app
-                    )
-                    repository.addTrackedApp(app)
-                    _status.value = "Added: ${details.fullName}"
-                    _event.value = SettingsEvent.NavigateBack
-                } else if (response.code() == 404 || response.code() == 401) {
-                    if (token.isNullOrBlank()) {
-                        _status.value = "Private repo. Add your GitHub token first ↑"
-                    } else {
-                        _status.value = "Access denied. Check your token has 'repo' scope."
+                // Try each token until one works (or try with no token if none work)
+                var success = false
+                var trackedApp: TrackedApp? = null
+
+                // Try with tokens first (most likely to succeed for private/rate-limited)
+                for (tokenEntity in availableTokens) {
+                    val response = repository.getRepoDetails(owner, repo, tokenEntity.accessToken)
+                    if (response.isSuccessful) {
+                        val details = response.body()!!
+                        trackedApp = TrackedApp(
+                            repoOwner = owner,
+                            repoName = repo,
+                            packageName = "",
+                            appName = details.name,
+                            ownerAvatarUrl = details.owner.avatarUrl,
+                            accessToken = tokenEntity.accessToken
+                        )
+                        success = true
+                        break
                     }
+                }
+
+                // If no tokens worked, try unauthenticated
+                if (!success) {
+                    val response = repository.getRepoDetails(owner, repo, null)
+                    if (response.isSuccessful) {
+                        val details = response.body()!!
+                        trackedApp = TrackedApp(
+                            repoOwner = owner,
+                            repoName = repo,
+                            packageName = "",
+                            appName = details.name,
+                            ownerAvatarUrl = details.owner.avatarUrl,
+                            accessToken = null
+                        )
+                        success = true
+                    }
+                }
+
+                if (success && trackedApp != null) {
+                    repository.addTrackedApp(trackedApp)
+                    _status.value = "Added: ${trackedApp.repoOwner}/${trackedApp.repoName}"
+                    _event.value = SettingsEvent.NavigateBack
                 } else {
-                    _status.value = "Error: ${response.message()}"
+                    _status.value = "Repo not found or access denied. Try adds a token ↑"
                 }
             } catch (e: Exception) {
-                _status.value = "Network Error: ${e.localizedMessage}"
+                _status.value = "Error: ${e.localizedMessage}"
             }
+        }
+    }
+
+    fun addToken(tokenString: String) {
+        viewModelScope.launch {
+            _status.value = "Validating token..."
+            try {
+                val response = repository.getUserProfile(tokenString)
+                if (response.isSuccessful) {
+                    val profile = response.body()!!
+                    val token = GithubToken(
+                        accessToken = tokenString,
+                        username = profile.login,
+                        avatarUrl = profile.avatarUrl,
+                        email = profile.email ?: profile.name // Fallback to name if email is private
+                    )
+                    repository.addGithubToken(token)
+                    _status.value = "Added token for ${profile.login}"
+                } else {
+                    _status.value = "Invalid token: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _status.value = "Error: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    fun deleteToken(token: GithubToken) {
+        viewModelScope.launch {
+            repository.deleteGithubToken(token)
+            _status.value = "Token removed"
         }
     }
 

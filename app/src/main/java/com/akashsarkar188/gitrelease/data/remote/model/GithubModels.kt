@@ -37,3 +37,11 @@ data class ReleaseAsset(
     @Json(name = "content_type") val contentType: String?,
     @Json(name = "size") val size: Long
 )
+
+@JsonClass(generateAdapter = true)
+data class UserProfile(
+    @Json(name = "login") val login: String,
+    @Json(name = "avatar_url") val avatarUrl: String,
+    @Json(name = "email") val email: String?,
+    @Json(name = "name") val name: String?
+)

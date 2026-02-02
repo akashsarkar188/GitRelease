@@ -1,9 +1,13 @@
 package com.akashsarkar188.gitrelease.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "tracked_apps")
+@Entity(
+    tableName = "tracked_apps",
+    indices = [Index(value = ["repoOwner", "repoName"], unique = true)]
+)
 data class TrackedApp(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val repoOwner: String,

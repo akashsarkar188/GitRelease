@@ -2,10 +2,13 @@ package com.akashsarkar188.gitrelease.data.repository
 
 import android.util.Log
 import com.akashsarkar188.gitrelease.data.local.dao.TrackedAppDao
+import com.akashsarkar188.gitrelease.data.local.dao.GithubTokenDao
 import com.akashsarkar188.gitrelease.data.local.entity.TrackedApp
+import com.akashsarkar188.gitrelease.data.local.entity.GithubToken
 import com.akashsarkar188.gitrelease.data.remote.NetworkModule
 import com.akashsarkar188.gitrelease.data.remote.model.ReleaseResponse
 import com.akashsarkar188.gitrelease.data.remote.model.RepoDetails
+import com.akashsarkar188.gitrelease.data.remote.model.UserProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -13,16 +16,25 @@ import retrofit2.Response
 
 private const val TAG = "AppRepository"
 
-class AppRepository(private val trackedAppDao: TrackedAppDao) {
+class AppRepository(
+    private val trackedAppDao: TrackedAppDao,
+    private val githubTokenDao: GithubTokenDao
+) {
 
     private val gitHubApi = NetworkModule.gitHubApi
 
     val allTrackedApps: Flow<List<TrackedApp>> = trackedAppDao.getAllApps()
+    val allGithubTokens: Flow<List<GithubToken>> = githubTokenDao.getAllTokens()
 
     suspend fun getRepoDetails(owner: String, repo: String, token: String? = null): Response<RepoDetails> = 
         withContext(Dispatchers.IO) {
             val authHeader = token?.let { "Bearer $it" }
             gitHubApi.getRepoDetails(owner, repo, authHeader)
+        }
+
+    suspend fun getUserProfile(token: String): Response<UserProfile> =
+        withContext(Dispatchers.IO) {
+            gitHubApi.getUserProfile("Bearer $token")
         }
 
     /**
@@ -91,7 +103,8 @@ class AppRepository(private val trackedAppDao: TrackedAppDao) {
                         tracks.add(latestPrerelease)
                     }
                 } else {
-                    Log.e(TAG, "getAllReleaseTracks failed: ${allResponse.code()}")
+                    val errorBody = allResponse.errorBody()?.string() ?: "No error body"
+                    Log.e(TAG, "getAllReleaseTracks failed: ${allResponse.code()} - $errorBody")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "getAllReleaseTracks error: ${e.message}", e)
@@ -110,6 +123,19 @@ class AppRepository(private val trackedAppDao: TrackedAppDao) {
 
     suspend fun updateTrackedApp(app: TrackedApp) = withContext(Dispatchers.IO) {
         trackedAppDao.updateApp(app)
+    }
+
+    // Token management
+    suspend fun addGithubToken(token: GithubToken) = withContext(Dispatchers.IO) {
+        githubTokenDao.insertToken(token)
+    }
+
+    suspend fun deleteGithubToken(token: GithubToken) = withContext(Dispatchers.IO) {
+        githubTokenDao.deleteToken(token)
+    }
+
+    suspend fun getGithubToken(tokenString: String) = withContext(Dispatchers.IO) {
+        githubTokenDao.getToken(tokenString)
     }
 }
 

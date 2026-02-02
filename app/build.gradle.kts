@@ -12,8 +12,8 @@ android {
         applicationId = "com.akashsarkar188.gitrelease"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appAuthRedirectScheme"] = "github.akashsarkar188.debughelper"

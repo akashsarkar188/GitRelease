@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.akashsarkar188.gitrelease.R
 import com.akashsarkar188.gitrelease.data.local.AppDatabase
 import com.akashsarkar188.gitrelease.data.manager.ApkDownloadService
@@ -17,6 +17,7 @@ import com.akashsarkar188.gitrelease.data.manager.UpdateManager
 import com.akashsarkar188.gitrelease.data.repository.AppRepository
 import com.akashsarkar188.gitrelease.databinding.FragmentHomeBinding
 import com.akashsarkar188.gitrelease.ui.settings.SettingsFragment
+import com.google.android.material.snackbar.Snackbar
 
 private const val TAG = "HomeFragment"
 
@@ -43,7 +44,7 @@ class HomeFragment : Fragment() {
         Log.d(TAG, "onViewCreated")
 
         val db = AppDatabase.getDatabase(requireContext())
-        val repository = AppRepository(db.trackedAppDao())
+        val repository = AppRepository(db.trackedAppDao(), db.githubTokenDao())
         val updateManager = UpdateManager(requireContext())
         val downloadService = ApkDownloadService(requireContext())
         viewModel = HomeViewModel(repository, updateManager, downloadService)
@@ -52,6 +53,11 @@ class HomeFragment : Fragment() {
         setupSwipeRefresh()
         setupFabMenu()
         setupObservers()
+        
+        // Trigger initial refresh only once
+        if (viewModel.appStates.value.isNullOrEmpty()) {
+            viewModel.refreshApps()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -181,20 +187,19 @@ class HomeFragment : Fragment() {
         viewModel.trackedApps.observe(viewLifecycleOwner) { apps ->
             Log.d(TAG, "trackedApps changed: ${apps.size} apps")
             binding.emptyState.isVisible = apps.isEmpty()
+            val distinctCount = apps.distinctBy { it.repoOwner.lowercase() + "/" + it.repoName.lowercase() }.size
             binding.tvSubtitle.text = if (apps.isEmpty()) {
                 "Track your app releases"
             } else {
-                "${apps.size} repositor${if (apps.size == 1) "y" else "ies"}"
+                "$distinctCount repositor${if (distinctCount == 1) "y" else "ies"}"
             }
             
-            // Always submit list (empty or not)
-            if (apps.isEmpty()) {
-                adapter.submitList(emptyList())
+            // Trigger refresh if a new app was added but isn't yet in appStates
+            val currentStatesSize = viewModel.appStates.value?.size ?: 0
+            if (apps.isNotEmpty() && apps.size != currentStatesSize) {
+                Log.d(TAG, "New app detected (apps: ${apps.size}, states: $currentStatesSize), triggering refresh")
+                viewModel.refreshApps()
             }
-            
-            // Trigger refresh to ensure seeding and update statuses
-            // The ViewModel will handle the seeding logic if the list is empty
-            viewModel.refreshApps()
         }
         
         // Observe enriched app states with version info
@@ -209,9 +214,16 @@ class HomeFragment : Fragment() {
         }
         
         viewModel.statusMessage.observe(viewLifecycleOwner) { msg ->
-            Log.d(TAG, "Status message: $msg")
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            if (msg.isNullOrBlank()) return@observe
+            showSnackbar(msg)
         }
+    }
+
+    private fun showSnackbar(message: String) {
+        val root = binding.homeRoot
+        Snackbar.make(root, message, Snackbar.LENGTH_SHORT)
+            .setTextColor(resources.getColor(R.color.primary_container, null))
+            .show()
     }
 
     override fun onResume() {

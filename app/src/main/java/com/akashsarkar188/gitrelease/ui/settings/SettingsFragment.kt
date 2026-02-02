@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import com.akashsarkar188.gitrelease.auth.TokenManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.akashsarkar188.gitrelease.R
 import com.akashsarkar188.gitrelease.data.local.AppDatabase
 import com.akashsarkar188.gitrelease.data.repository.AppRepository
 import com.akashsarkar188.gitrelease.databinding.FragmentSettingsBinding
+import com.google.android.material.snackbar.Snackbar
 
 class SettingsFragment : Fragment() {
 
@@ -17,6 +19,7 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
     
     private lateinit var viewModel: SettingsViewModel
+    private lateinit var tokenAdapter: TokenAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,8 +33,8 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val db = AppDatabase.getDatabase(requireContext())
-        val repository = AppRepository(db.trackedAppDao())
-        viewModel = SettingsViewModel(repository, requireContext())
+        val repository = AppRepository(db.trackedAppDao(), db.githubTokenDao())
+        viewModel = SettingsViewModel(repository)
 
         setupHeader()
         setupTokenSection()
@@ -46,21 +49,26 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setupTokenSection() {
-        // Load existing token if saved
-        val savedToken = TokenManager.getToken(requireContext())
-        if (!savedToken.isNullOrBlank()) {
-            binding.etToken.setText(savedToken)
+        tokenAdapter = TokenAdapter(
+            onDeleteClick = { token ->
+                viewModel.deleteToken(token)
+            }
+        )
+        
+        binding.rvTokens.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = tokenAdapter
         }
 
         binding.btnSaveToken.setOnClickListener {
             val token = binding.etToken.text.toString().trim()
             if (token.isBlank()) {
-                Toast.makeText(context, "Please enter a token", Toast.LENGTH_SHORT).show()
+                showSnackbar("Please enter a token")
                 return@setOnClickListener
             }
             
-            TokenManager.saveToken(requireContext(), token)
-            Toast.makeText(context, "Token saved!", Toast.LENGTH_SHORT).show()
+            viewModel.addToken(token)
+            binding.etToken.setText("") // Clear input
         }
     }
 
@@ -69,7 +77,7 @@ class SettingsFragment : Fragment() {
             val url = binding.etRepoUrl.text.toString().trim()
             
             if (url.isBlank()) {
-                Toast.makeText(context, "Please enter a repository", Toast.LENGTH_SHORT).show()
+                showSnackbar("Please enter a repository")
                 return@setOnClickListener
             }
             
@@ -80,23 +88,42 @@ class SettingsFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.status.observe(viewLifecycleOwner) { msg ->
-            binding.tvStatus.text = msg
+            if (msg.isNullOrBlank()) return@observe
+            showSnackbar(msg)
+            if (msg.contains("Added token")) {
+                binding.etToken.setText("")
+            }
+        }
+        
+        viewModel.tokens.observe(viewLifecycleOwner) { tokens: List<com.akashsarkar188.gitrelease.data.local.entity.GithubToken> ->
+            tokenAdapter.submitList(tokens)
+            binding.tvSavedTokensHeader.isVisible = tokens.isNotEmpty()
         }
         
         viewModel.event.observe(viewLifecycleOwner) { event ->
             when (event) {
                 is SettingsEvent.NavigateBack -> {
-                    Toast.makeText(context, "Repository added!", Toast.LENGTH_SHORT).show()
-                    parentFragmentManager.popBackStack()
+                    // Show message on previous screen or before popping
+                    showSnackbar("Repository added!")
+                    view?.postDelayed({
+                        parentFragmentManager.popBackStack()
+                    }, 500)
                     viewModel.clearEvent()
                 }
                 is SettingsEvent.ShowMessage -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                    showSnackbar(event.message)
                     viewModel.clearEvent()
                 }
                 null -> { /* No event */ }
             }
         }
+    }
+
+    private fun showSnackbar(message: String) {
+        val root = binding.settingsRoot
+        Snackbar.make(root, message, Snackbar.LENGTH_SHORT)
+            .setTextColor(resources.getColor(R.color.primary_container, null))
+            .show()
     }
 
     override fun onDestroyView() {
