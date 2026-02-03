@@ -189,20 +189,35 @@ for private repos.
 
 <h3>🎥 Video Demo</h3>
 <p>
-<strong>[PLACEHOLDER – Demo video coming soon]</strong>
+<video
+    src="https://github.com/user-attachments/assets/85ff01bd-1dc5-4fd2-9368-1237ac38c9df"
+    controls
+    muted
+    playsinline
+    style="max-width: 720px; width: 100%; border-radius: 12px;"
+  >
+  </video>
 </p>
 
-<!-- Example:
-<video src="demo.mp4" controls width="600"></video>
--->
-
 <h3>📱 Screenshots</h3>
-
-<p><strong>[PLACEHOLDER – Screenshot 1]</strong></p>
-<!-- <img src="screenshot1.png" width="300" /> -->
-
-<p><strong>[PLACEHOLDER – Screenshot 2]</strong></p>
-<!-- <img src="screenshot2.png" width="300" /> -->
+<table>
+  <tr>
+    <td align="center">
+      <img
+        src="https://github.com/user-attachments/assets/c241daa3-5c38-4971-a60a-811b5d8d0e42"
+        width="280"
+        alt="GitRelease Screenshot 1"
+      />
+    </td>
+    <td align="center">
+      <img
+        src="https://github.com/user-attachments/assets/c44c61f9-4411-4a23-8826-893329b56900"
+        width="280"
+        alt="GitRelease Screenshot 2"
+      />
+    </td>
+  </tr>
+</table>
 
 <hr />
 
